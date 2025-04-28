@@ -1,43 +1,125 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
+Description: |
   nimo-exercise
-
   Sample SAM Template for nimo-exercise
-  
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Timeout: 3
 
 Resources:
-  HelloWorldFunction:
+  EmailIdentity:
+    Type: AWS::SES::EmailIdentity
+    Properties:
+      EmailIdentity: <String>
+  Table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+  Queue:
+    Type: AWS::SQS::Queue
+  CryptoPriceFn:
     Type: AWS::Serverless::Function
     Properties:
       PackageType: Image
-      Architectures:
-        - x86_64
+      Environment:
+        Variables:
+          TABLE_TABLE_NAME: !Ref Table
+          TABLE_TABLE_ARN: !GetAtt Table.Arn
+          QUEUE_QUEUE_NAME: !GetAtt Queue.QueueName
+          QUEUE_QUEUE_ARN: !GetAtt Queue.Arn
+          QUEUE_QUEUE_URL: !Ref Queue
+          TABLE_TABLE_NAME_2: !Ref Table
+          TABLE_TABLE_ARN_2: !GetAtt Table.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Table
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt Queue.QueueName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Table
       Events:
-        HelloWorld:
+        ServerlessRestApiGETpricecurrency:
           Type: Api
           Properties:
-            Path: /hello
-            Method: get
+            Path: /price/{currency}
+            Method: GET
+      MemorySize: 3008
+      Timeout: 10
     Metadata:
       DockerTag: nodejs22.x-v1
       DockerContext: ./hello-world
       Dockerfile: Dockerfile
+  SendEmailFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: SendEmailFn
+      MemorySize: 3008
+      Timeout: 10
+      Tracing: Active
+      Events:
+        Queue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt Queue.Arn
+            BatchSize: 1
+      PackageType: Image
+  SendEmailFnLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${SendEmailFn}
+  SearchHistoryFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: SearchHistoryFn
+      MemorySize: 3008
+      Timeout: 10
+      Tracing: Active
+      Events:
+        ServerlessRestApiGETsearchhistory:
+          Type: Api
+          Properties:
+            Path: /search-history
+            Method: GET
+      PackageType: Image
+      Environment:
+        Variables:
+          TABLE_TABLE_NAME: !Ref Table
+          TABLE_TABLE_ARN: !GetAtt Table.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Table
+  SearchHistoryFnLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${SearchHistoryFn}
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+    Description: API Gateway endpoint URL for Prod stage for Hello World function
+    Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
   HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
+    Description: Hello World Lambda Function ARN
+    Value: !GetAtt CryptoPriceFn.Arn
   HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
+    Description: Implicit IAM Role created for Hello World function
     Value: !GetAtt HelloWorldFunctionRole.Arn
