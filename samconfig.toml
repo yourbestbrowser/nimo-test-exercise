@@ -16,6 +16,9 @@ capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
 resolve_image_repos = true
+s3_prefix = "nimo-exercise"
+region = "ap-southeast-2"
+profile = "nimo-exercise-profile"
 
 [default.package.parameters]
 resolve_s3 = true
