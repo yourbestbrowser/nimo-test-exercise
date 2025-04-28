@@ -24,7 +24,7 @@ jobs:
       - name: sam deploy
         env:
           AWS_DEFAULT_REGION: ${{ vars.REGION }}
-          AWS_REGION: ${{ env.REGION }}
+          AWS_REGION: ${{ vars.REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_ }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_ }}
           AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
