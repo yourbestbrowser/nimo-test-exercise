@@ -39,15 +39,11 @@ Resources:
           QUEUE_QUEUE_NAME: !GetAtt Queue.QueueName
           QUEUE_QUEUE_ARN: !GetAtt Queue.Arn
           QUEUE_QUEUE_URL: !Ref Queue
-          TABLE_TABLE_NAME_2: !Ref Table
-          TABLE_TABLE_ARN_2: !GetAtt Table.Arn
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref Table
         - SQSSendMessagePolicy:
             QueueName: !GetAtt Queue.QueueName
-        - DynamoDBCrudPolicy:
-            TableName: !Ref Table
       Events:
         ServerlessRestApiGETpricecurrency:
           Type: Api
@@ -79,6 +75,7 @@ Resources:
   SendEmailFnLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       LogGroupName: !Sub /aws/lambda/${SendEmailFn}
   SearchHistoryFn:
@@ -107,19 +104,26 @@ Resources:
   SearchHistoryFnLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       LogGroupName: !Sub /aws/lambda/${SearchHistoryFn}
 
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
-    Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
-  HelloWorldFunction:
-    Description: Hello World Lambda Function ARN
+  CryptoPriceApi:
+    Description: API Gateway endpoint URL for price queries
+    Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/price/
+  CryptoPriceFunction:
+    Description: Crypto Price Lambda Function ARN
     Value: !GetAtt CryptoPriceFn.Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  CryptoPriceFunctionIamRole:
+    Description: Implicit IAM Role created for Crypto Price function
+    Value: !GetAtt CryptoPriceFnRole.Arn
+  SearchHistoryApi:
+    Description: API Gateway endpoint URL for search history
+    Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/search-history
+  SearchHistoryFunction:
+    Description: Search History Lambda Function ARN
+    Value: !GetAtt SearchHistoryFn.Arn
+  SearchHistoryFunctionIamRole:
+    Description: Implicit IAM Role created for Search History function
+    Value: !GetAtt SearchHistoryFnRole.Arn
