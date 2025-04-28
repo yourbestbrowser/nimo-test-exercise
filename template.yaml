@@ -54,7 +54,7 @@ Resources:
       Timeout: 10
     Metadata:
       DockerTag: nodejs22.x-v1
-      DockerContext: ./hello-world
+      DockerContext: ./price-currency
       Dockerfile: Dockerfile
   SendEmailFn:
     Type: AWS::Serverless::Function
@@ -72,6 +72,10 @@ Resources:
             Queue: !GetAtt Queue.Arn
             BatchSize: 1
       PackageType: Image
+    Metadata:
+      DockerTag: nodejs22.x-v1
+      DockerContext: ./private-send-email
+      Dockerfile: Dockerfile
   SendEmailFnLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
@@ -101,6 +105,10 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref Table
+    Metadata:
+      DockerTag: nodejs22.x-v1
+      DockerContext: ./search-history
+      Dockerfile: Dockerfile
   SearchHistoryFnLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
