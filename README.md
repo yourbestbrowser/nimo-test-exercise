@@ -3,11 +3,11 @@
 ![](./infrastructure-composer-template.yaml.png)
 
 1. ServerlessRestApi
-  * public interface of project
+    * public interface of project
 2. CryptoPriceFn
 2. SearchHistoryFn
 3. Table
-  * database
+    * database
 4. Queue
-  * job delivery
+    * job delivery
 5. SendEmailFn
