@@ -5,9 +5,12 @@
 1. ServerlessRestApi
     * public interface of project
 2. CryptoPriceFn
+    * lambda
 2. SearchHistoryFn
-3. Table
+    * lambda
+4. Table
     * database
-4. Queue
+5. Queue
     * job delivery
-5. SendEmailFn
+6. SendEmailFn
+    * lambda (internal only, subscribed to queue, used for email sending)
